@@ -18,7 +18,7 @@ func CreateProdRep(conn *pgx.Conn) *ProductRepository {
 }
 func (p ProductRepository) Create(ctx context.Context, prod *products.Product) error {
 	SQLquery := `
-	INSERT INTO products (name,price,descriptions,created_at),
+	INSERT INTO products (name,price,descriptions,created_at)
 	VALUES ($1,$2,$3,$4)
 	RETURNING id
 	`
@@ -30,7 +30,7 @@ func (p ProductRepository) Create(ctx context.Context, prod *products.Product) e
 }
 func (p ProductRepository) GetAll(ctx context.Context) ([]products.Product, error) {
 	SQLquery := `
-	SELECT * FROM products
+	SELECT id, name, price, descriptions, created_at FROM products
 	ORDER BY id
 	`
 	rows, err := p.db.Query(ctx, SQLquery)
@@ -41,7 +41,7 @@ func (p ProductRepository) GetAll(ctx context.Context) ([]products.Product, erro
 	var prods []products.Product
 	for rows.Next() {
 		var prod products.Product
-		if err := rows.Scan(prod.ID, prod.Name, prod.Price, prod.Description, prod.Created_at); err != nil {
+		if err := rows.Scan(&prod.ID, &prod.Name, &prod.Price, &prod.Description, &prod.Created_at); err != nil {
 			return nil, err
 		}
 		prods = append(prods, prod)
@@ -50,7 +50,7 @@ func (p ProductRepository) GetAll(ctx context.Context) ([]products.Product, erro
 }
 func (p ProductRepository) GetByID(ctx context.Context, id int) (products.Product, error) {
 	SQLquery := `
-	SELECT * FROM products
+	SELECT id, name, descriptions, created_at FROM products
 	WHERE id = $1
 	`
 	var product products.Product
@@ -59,4 +59,14 @@ func (p ProductRepository) GetByID(ctx context.Context, id int) (products.Produc
 		return products.Product{}, err
 	}
 	return product, nil
+}
+func (p ProductRepository) DeleteByID(ctx context.Context, id int) error {
+	SQLquery := `
+	DELETE FROM products 
+	WHERE id = $1
+	`
+	_, err := p.db.Exec(ctx, SQLquery, id)
+
+	return err
+
 }

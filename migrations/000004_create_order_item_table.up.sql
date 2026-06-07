@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS order_item(
 	id SERIAL PRIMARY KEY,
-	order_id FOREIGN KEY NOT NULL,
-	product_id FOREIGN KEY NOT NULL,
+	order_id INTEGER NOT NULL REFERENCES users(id),
+	product_id INTEGER NOT NULL REFERENCES products(id),
 	quantity INTEGER NOT NULL
 	)

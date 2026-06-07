@@ -66,3 +66,10 @@ func (p *ProductService) GetByID(ctx context.Context, id int) (products.Product,
 	}
 	return p.repo.GetByID(ctx, id)
 }
+func (p ProductService) DeleteByID(ctx context.Context, id int) error {
+	if id < 0 {
+		return errors.New("id must be positive")
+	}
+	err := p.repo.DeleteByID(ctx, id)
+	return err
+}

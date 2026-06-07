@@ -8,6 +8,7 @@
 
 user{
     id
+    fullName
     email
     password_hash
     created_at
@@ -30,3 +31,11 @@ order_items{
     product_id
     quantity
 }
+
+POST /products
+GET /products
+GET /products/?id
+DELETE /products/?id
+POST /orders
+GET /orders
+

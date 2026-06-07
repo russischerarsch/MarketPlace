@@ -1,2 +1,2 @@
-INSERT INTO products
-ADD COLUMN productname VARCHAR(40);
+ALTER TABLE products
+ADD COLUMN name VARCHAR(40);
