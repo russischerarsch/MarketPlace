@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"mini-ozon/intern/models/services"
+	"mini-ozon/intern/services"
 	"strconv"
 
 	"github.com/gin-gonic/gin"

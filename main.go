@@ -6,8 +6,8 @@ import (
 	"log"
 	dbconnection "mini-ozon/db_connection"
 	"mini-ozon/handlers"
-	"mini-ozon/intern/models/services"
 	"mini-ozon/intern/repositories"
+	"mini-ozon/intern/services"
 )
 
 func main() {
@@ -17,9 +17,18 @@ func main() {
 		fmt.Println(err)
 	}
 	ProdRep := repositories.CreateProdRep(conn)
-	ProductServ := services.Create(ProdRep)
+	ProductServ := services.CreateProductService(ProdRep)
 	ProdHandler := handlers.NewProductHandler(ProductServ)
-	r := handlers.SetupRouter(ProdHandler)
+
+	UserRep := repositories.CreateUserRep(conn)
+	UserSer := services.CreateUserService(UserRep)
+	UserHandler := handlers.CreateUserHandlers(UserSer)
+
+	OrderRep := repositories.CreateOrderRep(conn)
+	OrderSer := services.CreateOrderService(OrderRep)
+	OrderHandler := handlers.CreateOrderHandlers(OrderSer)
+
+	r := handlers.SetupRouter(ProdHandler, UserHandler, OrderHandler)
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}

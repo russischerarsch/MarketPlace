@@ -39,5 +39,12 @@ func (u UserService) CreateUser(
 	if err := u.repo.Create(ctx, user); err != nil {
 		return users.User{}, err
 	}
-	err := u.cache.Set(strconv.Itoa(user.ID), user, cache.DefaultExpiration)
+	u.cache.Set(strconv.Itoa(user.ID), user, cache.DefaultExpiration)
+	return user, nil
+}
+func (u UserService) GetAllService(ctx context.Context) ([]users.User, error) {
+	return u.repo.GetAll(ctx)
+}
+func (u UserService) GetByID(ctx context.Context, id int) (users.User, error) {
+	return u.repo.GetByID(ctx, id)
 }

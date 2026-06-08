@@ -12,14 +12,12 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-const TimeLimit = 48 * time.Hour
-
 type ProductService struct {
 	repo  *repositories.ProductRepository
 	cache *cache.Cache
 }
 
-func Create(repo *repositories.ProductRepository) *ProductService {
+func CreateProductService(repo *repositories.ProductRepository) *ProductService {
 	return &ProductService{
 		repo:  repo,
 		cache: cache.New(12*time.Hour, 100*time.Minute),

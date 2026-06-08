@@ -34,14 +34,28 @@ func (u UserRepository) GetAll(ctx context.Context) ([]users.User, error) {
 	`
 	rows, err := u.db.Query(ctx, SQLquery)
 	if err != nil {
-		return err
+		return []users.User{}, err
 	}
 	defer rows.Close()
-	users := []users.User{}
+	usersList := []users.User{}
 	for rows.Next() {
 		var user users.User
-		err := rows.Scan(&user.fullname)
-		users = append(users)
+		err := rows.Scan(&user.FullName, &user.Email, &user.CreatedAt)
+		if err != nil {
+			return []users.User{}, err
+		}
+		usersList = append(usersList, user)
 	}
-	return users, nil
+	return usersList, nil
+}
+func (u UserRepository) GetByID(ctx context.Context, id int) (users.User, error) {
+	SQLquery := `
+	SELECT name, email, created_at FROM users
+	WHERE id = $1
+	`
+	var user users.User
+	if err := u.db.QueryRow(ctx, SQLquery, id).Scan(&user.FullName, &user.Email, &user.CreatedAt); err != nil {
+		return users.User{}, err
+	}
+	return user, nil
 }

@@ -8,9 +8,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var conn *pgx.Conn
-var Ctx = context.Background()
-
 func CheckConnection(ctx context.Context) (*pgx.Conn, error) {
 	if err := godotenv.Load(); err != nil {
 		return nil, err
