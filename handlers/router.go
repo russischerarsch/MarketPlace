@@ -22,6 +22,7 @@ func SetupRouter(productHandler *ProductHandler, userUserHandler *UserHandlers, 
 	v1.POST("/orders", orderHandler.CreateOrderHandler)
 	v1.GET("/orders", orderHandler.GetAllOrdersHandler)
 	v1.GET("/orders/:id", orderHandler.GetByIdHandler)
+	v1.POST("/orders/:id/items")
 
 	return r
 }

@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"mini-ozon/intern/models/products"
 	"mini-ozon/intern/repositories"
 	"strconv"
@@ -30,10 +29,10 @@ func (p *ProductService) CreateProduct(
 	name string) (products.Product, error) {
 
 	if price <= 0 {
-		fmt.Println("price must be positive")
+		return products.Product{}, errors.New("price must be positive")
 	}
 	if desc == "" || name == "" {
-		fmt.Println("field must be filled")
+		return products.Product{}, errors.New("fields must be filled")
 	}
 	product := &products.Product{
 		Name:        name,

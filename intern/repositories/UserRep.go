@@ -16,7 +16,7 @@ func CreateUserRep(conn *pgx.Conn) *UserRepository {
 		db: conn,
 	}
 }
-func (u UserRepository) Create(ctx context.Context, user users.User) error {
+func (u *UserRepository) Create(ctx context.Context, user *users.User) error {
 	SQLquery := `
 	INSERT INTO users (name, email, password, created_at)
 	VALUES($1,$2,$3,$4)
@@ -28,34 +28,34 @@ func (u UserRepository) Create(ctx context.Context, user users.User) error {
 	}
 	return nil
 }
-func (u UserRepository) GetAll(ctx context.Context) ([]users.User, error) {
+func (u UserRepository) GetAll(ctx context.Context) (*[]users.User, error) {
 	SQLquery := `
-	SELECT name, email, created_at FROM users
+	SELECT id, name, email, created_at FROM users
 	`
 	rows, err := u.db.Query(ctx, SQLquery)
 	if err != nil {
-		return []users.User{}, err
+		return &[]users.User{}, err
 	}
 	defer rows.Close()
 	usersList := []users.User{}
 	for rows.Next() {
 		var user users.User
-		err := rows.Scan(&user.FullName, &user.Email, &user.CreatedAt)
+		err := rows.Scan(&user.ID, &user.FullName, &user.Email, &user.CreatedAt)
 		if err != nil {
-			return []users.User{}, err
+			return &[]users.User{}, err
 		}
 		usersList = append(usersList, user)
 	}
-	return usersList, nil
+	return &usersList, nil
 }
-func (u UserRepository) GetByID(ctx context.Context, id int) (users.User, error) {
+func (u UserRepository) GetByID(ctx context.Context, id int) (*users.User, error) {
 	SQLquery := `
-	SELECT name, email, created_at FROM users
+	SELECT id, name, email, created_at FROM users
 	WHERE id = $1
 	`
 	var user users.User
-	if err := u.db.QueryRow(ctx, SQLquery, id).Scan(&user.FullName, &user.Email, &user.CreatedAt); err != nil {
-		return users.User{}, err
+	if err := u.db.QueryRow(ctx, SQLquery, id).Scan(&user.ID, &user.FullName, &user.Email, &user.CreatedAt); err != nil {
+		return &users.User{}, err
 	}
-	return user, nil
+	return &user, nil
 }

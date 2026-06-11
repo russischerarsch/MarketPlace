@@ -50,6 +50,7 @@ func (u UserHandlers) GetByIDHandler(c *gin.Context) {
 	user, err := u.service.GetByID(c, id)
 	if err != nil {
 		c.JSON(404, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(200, user)
 }

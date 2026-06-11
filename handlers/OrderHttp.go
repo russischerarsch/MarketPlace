@@ -24,9 +24,10 @@ func (o OrderHandlers) CreateOrderHandler(c *gin.Context) {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
-	order, err := o.service.CreateProduct(c, request.User_id)
+	order, err := o.service.CreateOrder(c, request.User_id)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(200, order)
 }

@@ -31,7 +31,7 @@ func (p *OrderService) CreateOrder(
 		Status:    orders.Pending,
 		CreatedAt: time.Now(),
 	}
-	if err := p.repo.Create(ctx, userID, &order); err != nil {
+	if err := p.repo.Create(ctx, &order); err != nil {
 		return orders.Order{}, err
 	}
 	p.cache.Set(strconv.Itoa(order.ID), order, cache.DefaultExpiration)

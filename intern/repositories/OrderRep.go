@@ -16,13 +16,13 @@ func CreateOrderRep(conn *pgx.Conn) *OrderRepository {
 		db: conn,
 	}
 }
-func (u OrderRepository) Create(ctx context.Context, userID int, order *orders.Order) error {
+func (u OrderRepository) Create(ctx context.Context, order *orders.Order) error {
 	SQLquery := `
 	INSERT INTO orders (user_id, status, created_at)
 	VALUES($1,$2,$3)
 	RETURNING id
 	`
-	err := u.db.QueryRow(ctx, SQLquery, userID, order.Status, order.CreatedAt).Scan(&order.ID)
+	err := u.db.QueryRow(ctx, SQLquery, order.UserID, order.Status, order.CreatedAt).Scan(&order.ID)
 	if err != nil {
 		return err
 	}

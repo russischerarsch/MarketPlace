@@ -22,7 +22,7 @@ func CreateUserService(repo *repositories.UserRepository) *UserService {
 		cache: cache.New(12*time.Hour, 100*time.Minute),
 	}
 }
-func (u UserService) CreateUser(
+func (u *UserService) CreateUser(
 	ctx context.Context,
 	name string,
 	email string,
@@ -36,15 +36,15 @@ func (u UserService) CreateUser(
 		PasswordHash: password,
 		CreatedAt:    time.Now(),
 	}
-	if err := u.repo.Create(ctx, user); err != nil {
+	if err := u.repo.Create(ctx, &user); err != nil {
 		return users.User{}, err
 	}
 	u.cache.Set(strconv.Itoa(user.ID), user, cache.DefaultExpiration)
 	return user, nil
 }
-func (u UserService) GetAllService(ctx context.Context) ([]users.User, error) {
+func (u UserService) GetAllService(ctx context.Context) (*[]users.User, error) {
 	return u.repo.GetAll(ctx)
 }
-func (u UserService) GetByID(ctx context.Context, id int) (users.User, error) {
+func (u UserService) GetByID(ctx context.Context, id int) (*users.User, error) {
 	return u.repo.GetByID(ctx, id)
 }
