@@ -17,14 +17,9 @@ func CreateOrderHandlers(service *services.OrderService) *OrderHandlers {
 	}
 }
 func (o OrderHandlers) CreateOrderHandler(c *gin.Context) {
-	var request struct {
-		User_id int `json:"user_id"`
-	}
-	if err := c.BindJSON(&request); err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-	order, err := o.service.CreateOrder(c, request.User_id)
+	userId := c.GetInt("user_id")
+	c.JSON(200, userId)
+	order, err := o.service.CreateOrder(c, userId)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return

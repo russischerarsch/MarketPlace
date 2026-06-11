@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -30,10 +31,14 @@ func (u *UserService) CreateUser(
 	if name == "" || email == "" || password == "" {
 		return users.User{}, errors.New("fields must be filled")
 	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return users.User{}, err
+	}
 	user := users.User{
 		FullName:     name,
 		Email:        email,
-		PasswordHash: password,
+		PasswordHash: string(hash),
 		CreatedAt:    time.Now(),
 	}
 	if err := u.repo.Create(ctx, &user); err != nil {

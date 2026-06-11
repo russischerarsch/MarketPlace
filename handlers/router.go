@@ -1,8 +1,12 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"mini-ozon/intern/auth"
 
-func SetupRouter(productHandler *ProductHandler, userUserHandler *UserHandlers, orderHandler *OrderHandlers) *gin.Engine {
+	"github.com/gin-gonic/gin"
+)
+
+func SetupRouter(authHandler auth.AuthHandlers, productHandler *ProductHandler, userUserHandler *UserHandlers, orderHandler *OrderHandlers) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
@@ -10,19 +14,25 @@ func SetupRouter(productHandler *ProductHandler, userUserHandler *UserHandlers, 
 	})
 
 	v1 := r.Group("/api/v1")
-	v1.POST("/products", productHandler.CreateHandler)
-	v1.GET("/products", productHandler.GetAllHandler)
-	v1.GET("/products/:id", productHandler.GetByIDHandler)
-	v1.DELETE("/products/:id", productHandler.DeleteByIDhandler)
+	v1.POST("/login", authHandler.Login)
+	v1.POST("/register", userUserHandler.CreateHandler)
 
-	v1.POST("/users", userUserHandler.CreateHandler)
-	v1.GET("/users", userUserHandler.GetAllHandler)
-	v1.GET("/users/:id", userUserHandler.GetByIDHandler)
+	authorized := v1.Group("/").Use(auth.AuthMiddleWare())
 
-	v1.POST("/orders", orderHandler.CreateOrderHandler)
-	v1.GET("/orders", orderHandler.GetAllOrdersHandler)
-	v1.GET("/orders/:id", orderHandler.GetByIdHandler)
-	v1.POST("/orders/:id/items")
+	authorized.POST("/products", productHandler.CreateHandler)
+	authorized.GET("/products", productHandler.GetAllHandler)
+	authorized.GET("/products/:id", productHandler.GetByIDHandler)
+	authorized.DELETE("/products/:id", productHandler.DeleteByIDhandler)
+
+	authorized.GET("/users", userUserHandler.GetAllHandler)
+	authorized.GET("/users/:id", userUserHandler.GetByIDHandler)
+
+	authorized.POST("/orders", orderHandler.CreateOrderHandler)
+	authorized.GET("/orders", orderHandler.GetAllOrdersHandler)
+	authorized.GET("/orders/:id", orderHandler.GetByIdHandler)
+
+	authorized.POST("/orders/:id/items")
+	authorized.GET("/orders/:id/items")
 
 	return r
 }

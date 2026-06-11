@@ -40,7 +40,7 @@ func (o OrderItemService) CreateOrderItem(
 	if err := o.repo.CreateOrderItem(ctx, order); err != nil {
 		return &orderitem.OrderItem{}, err
 	}
-	err := o.cache.Set(strconv.Itoa(order.ID), order, cache.DefaultExpiration)
+	o.cache.Set(strconv.Itoa(order.ID), order, cache.DefaultExpiration)
 	return order, nil
 }
 func (o OrderItemService) GetAll(ctx context.Context) ([]orderitem.OrderItem, error) {
