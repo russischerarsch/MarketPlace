@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	orderitem "mini-ozon/intern/models/orderItem"
 	"mini-ozon/intern/services"
+
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -16,10 +18,16 @@ func CreateOrderHandlers(service *services.OrderService) *OrderHandlers {
 		service: service,
 	}
 }
+
 func (o OrderHandlers) CreateOrderHandler(c *gin.Context) {
+	var orderRequest orderitem.OrderRequest
+	if err := c.BindJSON(&orderRequest); err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
 	userId := c.GetInt("user_id")
-	c.JSON(200, userId)
-	order, err := o.service.CreateOrder(c, userId)
+	order, err := o.service.CreateOrder(c, userId, orderRequest.Items)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -44,4 +52,12 @@ func (o OrderHandlers) GetByIdHandler(c *gin.Context) {
 		c.JSON(404, gin.H{"error": err.Error()})
 	}
 	c.JSON(200, order)
+}
+func (o OrderHandlers) GetAllByUserId(c *gin.Context) {
+	id := c.GetInt("id")
+	items, err := o.service.GetByUserID(c, id)
+	if err != nil {
+		c.JSON(401, gin.H{"error": err.Error()})
+	}
+	c.JSON(200, items)
 }

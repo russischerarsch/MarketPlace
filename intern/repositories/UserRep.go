@@ -18,11 +18,17 @@ func CreateUserRep(conn *pgx.Conn) *UserRepository {
 }
 func (u *UserRepository) Create(ctx context.Context, user *users.User) error {
 	SQLquery := `
-	INSERT INTO users (name, email, password, created_at)
-	VALUES($1,$2,$3,$4)
+	INSERT INTO users (name, email, password, created_at, balance)
+	VALUES($1,$2,$3,$4,$5)
 	RETURNING id
 	`
-	err := u.db.QueryRow(ctx, SQLquery, user.FullName, user.Email, user.PasswordHash, user.CreatedAt).Scan(&user.ID)
+	err := u.db.QueryRow(ctx,
+		SQLquery,
+		user.FullName,
+		user.Email,
+		user.PasswordHash,
+		user.CreatedAt,
+		user.Balance).Scan(&user.ID)
 	if err != nil {
 		return err
 	}
