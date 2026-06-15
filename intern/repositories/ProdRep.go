@@ -50,11 +50,11 @@ func (p ProductRepository) GetAll(ctx context.Context) ([]products.Product, erro
 }
 func (p ProductRepository) GetByID(ctx context.Context, id int) (products.Product, error) {
 	SQLquery := `
-	SELECT id, name, descriptions, created_at FROM products
+	SELECT id, name, descriptions, created_at, price FROM products
 	WHERE id = $1
 	`
 	var product products.Product
-	err := p.db.QueryRow(ctx, SQLquery, id).Scan(&product.ID, &product.Name, &product.Description, &product.Created_at)
+	err := p.db.QueryRow(ctx, SQLquery, id).Scan(&product.ID, &product.Name, &product.Description, &product.Created_at, &product.Price)
 	if err != nil {
 		return products.Product{}, err
 	}

@@ -16,15 +16,17 @@ func CreateOrderItemRep(conn *pgx.Conn) *OrderItemRepository {
 		db: conn,
 	}
 }
+func (o OrderItemRepository) BeginTx(ctx context.Context) (pgx.Tx, error) { return o.db.Begin(ctx) }
 func (o *OrderItemRepository) CreateOrderItem(
 	ctx context.Context,
-	orderItem *orderitem.OrderItem) error {
+	orderItem *orderitem.OrderItem,
+	tx pgx.Tx) error {
 	SQLquery := `
 		INSERT INTO order_item (order_id, product_id, quantity)
 		VALUES($1,$2,$3)
 		RETURNING id
 		`
-	err := o.db.QueryRow(ctx, SQLquery, orderItem.Order_id, orderItem.Product_id, orderItem.Quantity).Scan(&orderItem.ID)
+	err := tx.QueryRow(ctx, SQLquery, orderItem.Order_id, orderItem.Product_id, orderItem.Quantity).Scan(&orderItem.ID)
 	if err != nil {
 		return err
 	}

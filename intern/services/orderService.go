@@ -13,15 +13,20 @@ import (
 )
 
 type OrderService struct {
-	orderrepo   *repositories.OrderRepository
-	productrepo *repositories.ProductRepository
-	cache       *cache.Cache
+	orderrepo     *repositories.OrderRepository
+	productrepo   *repositories.ProductRepository
+	orderitemrepo *repositories.OrderItemRepository
+	cache         *cache.Cache
 }
 
-func CreateOrderService(repo *repositories.OrderRepository) *OrderService {
+func CreateOrderService(repo *repositories.OrderRepository,
+	prodrepo *repositories.ProductRepository,
+	orderitemrepo *repositories.OrderItemRepository) *OrderService {
 	return &OrderService{
-		orderrepo: repo,
-		cache:     cache.New(12*time.Hour, 100*time.Minute),
+		orderrepo:     repo,
+		productrepo:   prodrepo,
+		orderitemrepo: orderitemrepo,
+		cache:         cache.New(12*time.Hour, 100*time.Minute),
 	}
 }
 func (p *OrderService) CreateOrder(
@@ -29,10 +34,21 @@ func (p *OrderService) CreateOrder(
 	userID int,
 	orderItems []orderitem.OrderItemRequest,
 ) (orders.Order, error) {
+	tx, err := p.orderrepo.BeginTx(ctx)
+	if err != nil {
+		return orders.Order{}, err
+	}
+	defer tx.Rollback(ctx)
 	total := 0
 	for _, item := range orderItems {
-		product, _ := p.productrepo.GetByID(ctx, item.ProductID)
-		total += product.Price
+		if item.Quantity <= 0 {
+			return orders.Order{}, errors.New("quantity must be positive")
+		}
+		product, err := p.productrepo.GetByID(ctx, item.ProductID)
+		if err != nil {
+			return orders.Order{}, err
+		}
+		total += product.Price * item.Quantity
 	}
 	order := orders.Order{
 		UserID:    userID,
@@ -40,7 +56,20 @@ func (p *OrderService) CreateOrder(
 		Status:    orders.Pending,
 		CreatedAt: time.Now(),
 	}
-	if err := p.orderrepo.Create(ctx, &order); err != nil {
+	if err := p.orderrepo.Create(ctx, &order, tx); err != nil {
+		return orders.Order{}, err
+	}
+	for _, item := range orderItems {
+		itemSt := orderitem.OrderItem{
+			Order_id:   order.ID,
+			Product_id: item.ProductID,
+			Quantity:   item.Quantity,
+		}
+		if err := p.orderitemrepo.CreateOrderItem(ctx, &itemSt, tx); err != nil {
+			return orders.Order{}, err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
 		return orders.Order{}, err
 	}
 	p.cache.Set(strconv.Itoa(order.ID), order, cache.DefaultExpiration)

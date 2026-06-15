@@ -7,15 +7,15 @@ const (
 	Paid      Status = "Заказ оплачен"
 	Delivered Status = "Заказ доставлен"
 	Completed Status = "Заказ завершён"
+	Cancelled Status = "Заказ отменен"
 )
 
 var allowedTransitions = map[Status][]Status{
 	Pending:   {Paid, Cancelled},
-	Paid:      {Shipped, Cancelled},
-	Shipped:   {Delivered, Cancelled},
+	Paid:      {Delivered, Cancelled},
 	Delivered: {Completed, Cancelled},
-	Completed: {}, // финальный статус, никуда нельзя
-	Cancelled: {}, // финальный статус, никуда нельзя
+	Completed: {},
+	Cancelled: {},
 }
 
 func CanTransition(current, next Status) bool {

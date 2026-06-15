@@ -1,13 +1,18 @@
 package handlers
 
 import (
-	"mini-ozon/handlers"
 	"mini-ozon/intern/auth"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
-func SetupRouter(authHandler auth.AuthHandlers, productHandler *ProductHandler, userUserHandler *UserHandlers, orderHandler *OrderHandlers) *gin.Engine {
+func SetupRouter(authHandler auth.AuthHandlers,
+	productHandler *ProductHandler,
+	userUserHandler *UserHandlers,
+	orderHandler *OrderHandlers,
+	statusChanger *ChangeStatusHandler,
+	rdb *redis.Client) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
@@ -15,7 +20,7 @@ func SetupRouter(authHandler auth.AuthHandlers, productHandler *ProductHandler, 
 	})
 
 	v1 := r.Group("/api/v1")
-	v1.POST("/login", authHandler.Login)
+	v1.POST("/login", auth.LoginRateLimiter(rdb), authHandler.Login)
 	v1.POST("/register", userUserHandler.CreateHandler)
 	v1.GET("/orders", orderHandler.GetAllOrdersHandler)
 	v1.GET("/users", userUserHandler.GetAllHandler)
@@ -30,7 +35,7 @@ func SetupRouter(authHandler auth.AuthHandlers, productHandler *ProductHandler, 
 
 	authorized.POST("/orders", orderHandler.CreateOrderHandler)
 	authorized.GET("/orders/:id", orderHandler.GetByIdHandler)
-	authorized.PATCH("/orders", handlers.ChangeStatusHandler)
+	authorized.PATCH("/orders", statusChanger.ChangeStatus)
 	authorized.GET("/orders/my", orderHandler.GetAllByUserId)
 
 	authorized.POST("/orders/:id/items")

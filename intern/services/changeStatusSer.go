@@ -26,5 +26,5 @@ func (c ChangeStatServ) ChangeStatus(ctx context.Context, id int, status orders.
 		return errors.New("invalid status transition")
 	}
 
-	return c.repo.ChangeStatus(newStatus, id, ctx)
+	return c.repo.ChangeStatus(status, id, ctx)
 }

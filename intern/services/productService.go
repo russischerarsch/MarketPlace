@@ -2,24 +2,26 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"mini-ozon/intern/models/products"
+
 	"mini-ozon/intern/repositories"
-	"strconv"
 	"time"
 
-	"github.com/patrickmn/go-cache"
+	"github.com/redis/go-redis/v9"
 )
 
 type ProductService struct {
 	repo  *repositories.ProductRepository
-	cache *cache.Cache
+	redis *redis.Client
 }
 
-func CreateProductService(repo *repositories.ProductRepository) *ProductService {
+func CreateProductService(repo *repositories.ProductRepository, redisClient *redis.Client) *ProductService {
 	return &ProductService{
 		repo:  repo,
-		cache: cache.New(12*time.Hour, 100*time.Minute),
+		redis: redisClient,
 	}
 }
 func (p *ProductService) CreateProduct(
@@ -43,7 +45,9 @@ func (p *ProductService) CreateProduct(
 	if err := p.repo.Create(ctx, product); err != nil {
 		return products.Product{}, err
 	}
-	p.cache.Set(strconv.Itoa(product.ID), product, cache.DefaultExpiration)
+	key := fmt.Sprintf("product:%d", product.ID)
+	data, _ := json.Marshal(product)
+	p.redis.Set(ctx, key, data, 1*time.Hour)
 	return *product, nil
 }
 func (p *ProductService) GetAll(ctx context.Context) ([]products.Product, error) {
@@ -54,13 +58,19 @@ func (p *ProductService) GetByID(ctx context.Context, id int) (products.Product,
 	if id < 0 {
 		return products.Product{}, errors.New("id must be positive")
 	}
-	if value, found := p.cache.Get(strconv.Itoa(id)); found {
-		product, ok := value.(*products.Product)
-		if !ok {
-			return products.Product{}, errors.New("failed to type Assertion")
-		}
-		return *product, nil
+	key := fmt.Sprintf("product:%d", id)
+	val, err := p.redis.Get(ctx, key).Result()
+	if err == nil {
+		var product products.Product
+		json.Unmarshal([]byte(val), &product)
+		return product, nil
 	}
+	product, err := p.repo.GetByID(ctx, id)
+	if err != nil {
+		return products.Product{}, err
+	}
+	data, _ := json.Marshal(product)
+	p.redis.Set(ctx, key, data, 1*time.Hour)
 	return p.repo.GetByID(ctx, id)
 }
 func (p ProductService) DeleteByID(ctx context.Context, id int) error {
@@ -68,5 +78,7 @@ func (p ProductService) DeleteByID(ctx context.Context, id int) error {
 		return errors.New("id must be positive")
 	}
 	err := p.repo.DeleteByID(ctx, id)
+	key := fmt.Sprintf("product:%d", id)
+	p.redis.Del(ctx, key)
 	return err
 }

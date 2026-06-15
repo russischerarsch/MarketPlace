@@ -11,6 +11,6 @@ type OrderRequest struct {
 	Items []OrderItemRequest `json:"items"`
 }
 type OrderWithItem struct {
-	OrderItem OrderItem
+	OrderItem []OrderItem
 	Order     orders.Order
 }

@@ -17,13 +17,14 @@ func CreateOrderRep(conn *pgx.Conn) *OrderRepository {
 		db: conn,
 	}
 }
-func (u OrderRepository) Create(ctx context.Context, order *orders.Order) error {
+func (u OrderRepository) BeginTx(ctx context.Context) (pgx.Tx, error) { return u.db.Begin(ctx) }
+func (u OrderRepository) Create(ctx context.Context, order *orders.Order, tx pgx.Tx) error {
 	SQLquery := `
 	INSERT INTO orders (user_id, status, created_at,total)
 	VALUES($1,$2,$3,$4)
 	RETURNING id
 	`
-	err := u.db.QueryRow(ctx, SQLquery, order.UserID, order.Status, order.CreatedAt, order.Total).Scan(&order.ID)
+	err := tx.QueryRow(ctx, SQLquery, order.UserID, order.Status, order.CreatedAt, order.Total).Scan(&order.ID)
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func (u OrderRepository) GetAllByUserId(ctx context.Context, id int) ([]orders.O
 func (r *OrderRepository) GetOrderItems(ctx context.Context, orderID int) ([]orderitem.OrderItem, error) {
 	query := `
         SELECT id, product_id, quantity
-        FROM order_items
+        FROM order_item
         WHERE order_id = $1
     `
 	rows, err := r.db.Query(ctx, query, orderID)

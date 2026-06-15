@@ -38,6 +38,7 @@ func (o OrderHandlers) GetAllOrdersHandler(c *gin.Context) {
 	orders, err := o.service.GetAll(c)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(200, orders)
 }
@@ -46,18 +47,21 @@ func (o OrderHandlers) GetByIdHandler(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
+		return
 	}
 	order, err := o.service.GetByID(c, id)
 	if err != nil {
 		c.JSON(404, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(200, order)
 }
 func (o OrderHandlers) GetAllByUserId(c *gin.Context) {
-	id := c.GetInt("id")
+	id := c.GetInt("user_id")
 	items, err := o.service.GetByUserID(c, id)
 	if err != nil {
 		c.JSON(401, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(200, items)
 }

@@ -30,14 +30,17 @@ func (o OrderItemService) CreateOrderItem(
 	if OrderId < 0 || Quantity < 0 || ProductId < 0 {
 		return &orderitem.OrderItem{}, errors.New("must be positive")
 	}
-
+	tx, err := o.repo.BeginTx(ctx)
+	if err != nil {
+		return &orderitem.OrderItem{}, err
+	}
 	order := &orderitem.OrderItem{
 		Order_id:   OrderId,
 		Product_id: ProductId,
 		Quantity:   Quantity,
 	}
 
-	if err := o.repo.CreateOrderItem(ctx, order); err != nil {
+	if err := o.repo.CreateOrderItem(ctx, order, tx); err != nil {
 		return &orderitem.OrderItem{}, err
 	}
 	o.cache.Set(strconv.Itoa(order.ID), order, cache.DefaultExpiration)
