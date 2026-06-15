@@ -41,10 +41,16 @@ POST	/api/v1/orders	Создать заказ (auth)
 GET	/api/v1/orders	Мои заказы (auth)
 📁 Структура
 
-text
-internal/
-├── handlers/     # HTTP-слой
-├── services/     # Бизнес-логика
-├── repositories/ # Работа с БД
-├── models/       # Структуры
-├── auth/         # JWT + rate limiter
+├── db_connection
+├── handlers
+├── intern
+│   ├── auth
+│   ├── models
+│   │   ├── orderItem
+│   │   ├── orders
+│   │   ├── products
+│   │   └── users
+│   ├── redisClient
+│   ├── repositories
+│   └── services
+└── migrations
