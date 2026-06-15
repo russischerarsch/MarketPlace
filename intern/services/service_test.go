@@ -20,6 +20,7 @@ type ProductRepository interface {
 
 // ========== СЕРВИС ==========
 type ProductServiceTest struct {
+	ProductService
 	repo ProductRepository
 }
 
@@ -74,7 +75,6 @@ func (m *MockProductRepo) GetByID(ctx context.Context, id int) (*products.Produc
 	return args.Get(0).(*products.Product), args.Error(1)
 }
 
-// ========== ТЕСТЫ ==========
 func TestCreateProduct_Success(t *testing.T) {
 	mockRepo := new(MockProductRepo)
 	service := NewProductServiceTest(mockRepo)

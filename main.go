@@ -25,6 +25,9 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	if conn == nil {
+		log.Fatal("conn is nil!")
+	}
 	ProdRep := repositories.CreateProdRep(conn)
 	ProductServ := services.CreateProductService(ProdRep, redis.Rdb)
 	ProdHandler := handlers.NewProductHandler(ProductServ)
