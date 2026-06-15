@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS products(
+	id SERIAL PRIMARY KEY,
+	price INTEGER NOT NULL,
+	descriptions VARCHAR(300) NOT NULL,
+	created_at TIMESTAMP NOT NULL
+	)
