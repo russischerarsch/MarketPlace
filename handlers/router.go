@@ -35,7 +35,7 @@ func SetupRouter(authHandler auth.AuthHandlers,
 
 	authorized.POST("/orders", orderHandler.CreateOrderHandler)
 	authorized.GET("/orders/:id", orderHandler.GetByIdHandler)
-	authorized.PATCH("/orders", statusChanger.ChangeStatus)
+	authorized.PATCH("/orders", statusChanger.ChangeStatusGIN)
 	authorized.GET("/orders/my", orderHandler.GetAllByUserId)
 
 	authorized.POST("/orders/:id/items")
